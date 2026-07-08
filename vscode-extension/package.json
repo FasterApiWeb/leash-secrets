@@ -2,7 +2,7 @@
   "name": "leash-secrets-vscode",
   "displayName": "Leash Secrets — Secret Scanner",
   "description": "Inline warnings for exposed API keys, tokens, and credentials. 71 patterns across 11 provider categories.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "FasterApiWeb",
   "license": "MIT",
   "icon": "icon.png",
@@ -56,7 +56,11 @@
         "leash-secrets.severity": {
           "type": "string",
           "default": "warning",
-          "enum": ["critical", "warning", "info"],
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ],
           "description": "Minimum severity to display"
         },
         "leash-secrets.scanOnSave": {
@@ -71,7 +75,12 @@
         },
         "leash-secrets.excludePatterns": {
           "type": "array",
-          "default": ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**"],
+          "default": [
+            "**/node_modules/**",
+            "**/.git/**",
+            "**/dist/**",
+            "**/build/**"
+          ],
           "description": "Glob patterns to exclude from scanning"
         }
       }
