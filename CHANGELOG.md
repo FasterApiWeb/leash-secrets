@@ -5,6 +5,14 @@ All notable changes to leash-secrets will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/FasterApiWeb/leash-secrets/compare/leash-secrets-v1.0.0...leash-secrets-v1.1.0) (2026-07-08)
+
+
+### Features
+
+* launch leash — AI agent skill that catches exposed secrets before they hit your codebase ([ecc999d](https://github.com/FasterApiWeb/leash-secrets/commit/ecc999db94dd111be02f57fae6c45b52d5078e84))
+* launch leash — AI agent skill that catches exposed secrets before they hit your codebase ([2b2dc91](https://github.com/FasterApiWeb/leash-secrets/commit/2b2dc91a58fd89883dc5beddc251129d573ec93c))
+
 ## [1.0.0] — 2026-07-07
 
 ### Added
