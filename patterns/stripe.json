@@ -1,0 +1,63 @@
+{
+  "provider": "stripe",
+  "display_name": "Stripe & Payment Providers",
+  "patterns": [
+    {
+      "id": "stripe-live-secret-key",
+      "name": "Stripe Live Secret Key",
+      "severity": "critical",
+      "regex": "sk_live_[0-9a-zA-Z]{24,}",
+      "description": "Stripe live-mode secret key — THIS CAN MOVE REAL MONEY",
+      "risk": "CRITICAL: Can create charges, refunds, transfer funds, access all customer data. This is a production payment key.",
+      "fix": "Use STRIPE_SECRET_KEY env var. ROTATE IMMEDIATELY if ever committed.",
+      "rotation_url": "https://dashboard.stripe.com/apikeys"
+    },
+    {
+      "id": "stripe-live-restricted-key",
+      "name": "Stripe Live Restricted Key",
+      "severity": "critical",
+      "regex": "rk_live_[0-9a-zA-Z]{24,}",
+      "description": "Stripe live-mode restricted key",
+      "risk": "Access to Stripe API with restricted permissions. Still a production credential.",
+      "fix": "Use environment variable. Restrict key permissions to minimum needed.",
+      "rotation_url": "https://dashboard.stripe.com/apikeys"
+    },
+    {
+      "id": "stripe-webhook-secret",
+      "name": "Stripe Webhook Signing Secret",
+      "severity": "critical",
+      "regex": "whsec_[0-9a-zA-Z]{32,}",
+      "description": "Stripe webhook endpoint signing secret",
+      "risk": "Attacker can forge webhook events and trigger business logic (fake payments, etc.).",
+      "fix": "Use STRIPE_WEBHOOK_SECRET environment variable.",
+      "rotation_url": "https://dashboard.stripe.com/webhooks"
+    },
+    {
+      "id": "stripe-test-key",
+      "name": "Stripe Test Secret Key",
+      "severity": "info",
+      "regex": "sk_test_[0-9a-zA-Z]{24,}",
+      "description": "Stripe test-mode secret key (not production, but still sensitive)",
+      "risk": "Low risk — test mode only. But reveals your account structure and should still be kept private.",
+      "fix": "Best practice: still use environment variables even for test keys."
+    },
+    {
+      "id": "paypal-client-secret",
+      "name": "PayPal Client Secret",
+      "severity": "critical",
+      "regex": "(?i)paypal.*client.?secret\\s*[=:]\\s*['\"]?[A-Za-z0-9_-]{40,}['\"]?",
+      "description": "PayPal REST API client secret",
+      "risk": "Can process payments, issue refunds, and access transaction data.",
+      "fix": "Use PAYPAL_CLIENT_SECRET environment variable."
+    },
+    {
+      "id": "square-access-token",
+      "name": "Square Access Token",
+      "severity": "critical",
+      "regex": "sq0atp-[0-9A-Za-z_-]{22}",
+      "description": "Square API access token",
+      "risk": "Access to Square payment processing and merchant data.",
+      "fix": "Use SQUARE_ACCESS_TOKEN environment variable."
+    }
+  ]
+}

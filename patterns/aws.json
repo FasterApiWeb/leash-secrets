@@ -1,0 +1,45 @@
+{
+  "provider": "aws",
+  "display_name": "Amazon Web Services",
+  "patterns": [
+    {
+      "id": "aws-access-key-id",
+      "name": "AWS Access Key ID",
+      "severity": "critical",
+      "regex": "(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}",
+      "description": "AWS access key ID, used with a secret access key to authenticate API requests",
+      "risk": "Full access to AWS account resources. Attacker can spin up instances, access S3 buckets, read databases, and run up your bill.",
+      "fix": "Use AWS_ACCESS_KEY_ID environment variable or IAM roles for EC2/ECS/Lambda",
+      "rotation_url": "https://console.aws.amazon.com/iam/home#/security_credentials",
+      "false_positive_hints": ["Example keys in AWS docs start with AKIAIOSFODNN7EXAMPLE"]
+    },
+    {
+      "id": "aws-secret-access-key",
+      "name": "AWS Secret Access Key",
+      "severity": "critical",
+      "regex": "(?i)aws_secret_access_key\\s*[=:]\\s*['\"]?[A-Za-z0-9/+=]{40}['\"]?",
+      "description": "AWS secret access key paired with an access key ID",
+      "risk": "Combined with access key ID, grants full API access to AWS resources.",
+      "fix": "Use AWS_SECRET_ACCESS_KEY environment variable, IAM roles, or AWS Secrets Manager",
+      "rotation_url": "https://console.aws.amazon.com/iam/home#/security_credentials"
+    },
+    {
+      "id": "aws-session-token",
+      "name": "AWS Session Token",
+      "severity": "critical",
+      "regex": "(?i)aws_session_token\\s*[=:]\\s*['\"]?[A-Za-z0-9/+=]{100,}['\"]?",
+      "description": "Temporary AWS session token from STS",
+      "risk": "Grants temporary access to AWS resources. Usually short-lived but still dangerous.",
+      "fix": "Never hardcode session tokens. Use AWS SDK credential providers."
+    },
+    {
+      "id": "aws-mws-key",
+      "name": "AWS MWS Key",
+      "severity": "critical",
+      "regex": "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "description": "Amazon Marketplace Web Service auth token",
+      "risk": "Access to Amazon seller account data and operations.",
+      "fix": "Store in AWS Secrets Manager or environment variables"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+name: New Secret Pattern
+description: Suggest a new secret type for leash to detect
+title: "[pattern] "
+labels: ["pattern", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping leash detect more secrets! Fill out this template to propose a new pattern.
+
+  - type: input
+    id: provider
+    attributes:
+      label: Provider / Service
+      description: Which service or provider does this secret belong to?
+      placeholder: e.g., Datadog, Twilio, Shopify
+    validations:
+      required: true
+
+  - type: input
+    id: secret-type
+    attributes:
+      label: Secret Type
+      description: What type of secret is this?
+      placeholder: e.g., API Key, OAuth Token, Webhook Secret
+    validations:
+      required: true
+
+  - type: input
+    id: prefix
+    attributes:
+      label: Known Prefix or Format
+      description: Does this secret have a known prefix or fixed format?
+      placeholder: e.g., "dd_api_" prefix, 32 hex characters
+    validations:
+      required: true
+
+  - type: textarea
+    id: regex
+    attributes:
+      label: Suggested Regex
+      description: If you have a regex, paste it here (optional)
+      render: text
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - critical (live credential, immediate risk)
+        - warning (might be real, needs confirmation)
+        - info (informational only)
+    validations:
+      required: true
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk
+      description: What can an attacker do with this secret?
+      placeholder: e.g., "Can access all monitoring data and create/modify dashboards"
+    validations:
+      required: true
+
+  - type: textarea
+    id: documentation
+    attributes:
+      label: Documentation Link
+      description: Link to the provider's docs about this credential type

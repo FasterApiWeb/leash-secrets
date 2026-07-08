@@ -1,0 +1,69 @@
+{
+  "provider": "crypto",
+  "display_name": "Cryptographic Material & Private Keys",
+  "patterns": [
+    {
+      "id": "rsa-private-key",
+      "name": "RSA Private Key",
+      "severity": "critical",
+      "regex": "-----BEGIN RSA PRIVATE KEY-----",
+      "description": "RSA private key in PEM format",
+      "risk": "Can impersonate the key owner, decrypt data, sign documents. If used for SSH, grants server access.",
+      "fix": "Never commit private keys. Use SSH agent, secret manager, or mount at runtime."
+    },
+    {
+      "id": "openssh-private-key",
+      "name": "OpenSSH Private Key",
+      "severity": "critical",
+      "regex": "-----BEGIN OPENSSH PRIVATE KEY-----",
+      "description": "OpenSSH private key (Ed25519, ECDSA, or RSA)",
+      "risk": "Grants SSH access to any server that has the corresponding public key in authorized_keys.",
+      "fix": "Use SSH agent forwarding. Never commit SSH keys to a repository."
+    },
+    {
+      "id": "ec-private-key",
+      "name": "EC Private Key",
+      "severity": "critical",
+      "regex": "-----BEGIN EC PRIVATE KEY-----",
+      "description": "Elliptic Curve private key in PEM format",
+      "risk": "Can sign data, authenticate, and decrypt EC-encrypted content.",
+      "fix": "Use a secret manager or mount the key at runtime."
+    },
+    {
+      "id": "dsa-private-key",
+      "name": "DSA Private Key",
+      "severity": "critical",
+      "regex": "-----BEGIN DSA PRIVATE KEY-----",
+      "description": "DSA private key in PEM format (deprecated algorithm)",
+      "risk": "Can sign data and authenticate. DSA is deprecated — migrate to Ed25519.",
+      "fix": "Remove and rotate. Migrate to Ed25519 keys."
+    },
+    {
+      "id": "pgp-private-key-block",
+      "name": "PGP Private Key Block",
+      "severity": "critical",
+      "regex": "-----BEGIN PGP PRIVATE KEY BLOCK-----",
+      "description": "PGP/GPG private key block",
+      "risk": "Can decrypt PGP-encrypted data and sign messages as the key owner.",
+      "fix": "Use GPG agent. Never store private keys in repositories."
+    },
+    {
+      "id": "generic-private-key",
+      "name": "Generic Private Key",
+      "severity": "critical",
+      "regex": "-----BEGIN PRIVATE KEY-----",
+      "description": "PKCS#8 private key in PEM format",
+      "risk": "Generic private key — risk depends on what it's used for (TLS, signing, auth).",
+      "fix": "Use a certificate manager (ACM, Let's Encrypt auto-renewal) or secret vault."
+    },
+    {
+      "id": "pkcs12-password",
+      "name": "PKCS12/PFX Password",
+      "severity": "warning",
+      "regex": "(?i)(?:pkcs12|pfx|p12).*(?:password|pass|passphrase)\\s*[=:]\\s*['\"]?[^\\s'\"]+['\"]?",
+      "description": "Password for a PKCS12/PFX certificate bundle",
+      "risk": "Can unlock the certificate bundle and extract the private key.",
+      "fix": "Store the password in a secret manager, reference by environment variable."
+    }
+  ]
+}

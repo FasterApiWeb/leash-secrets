@@ -1,0 +1,18 @@
+{
+  "hooks": [
+    {
+      "name": "leash-pre-commit-scan",
+      "event": "pre-commit",
+      "description": "Scan staged changes for exposed secrets before committing",
+      "command": "bash hooks/pre-commit.sh",
+      "blocking": true
+    },
+    {
+      "name": "leash-session-start",
+      "event": "session-start",
+      "description": "Activate leash secret scanning for this session",
+      "command": "echo '[LEASH] 🔒 Secret scanning active — patrol mode'",
+      "blocking": false
+    }
+  ]
+}

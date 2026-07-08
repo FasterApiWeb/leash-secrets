@@ -1,0 +1,64 @@
+{
+  "provider": "ai",
+  "display_name": "AI & LLM Providers",
+  "patterns": [
+    {
+      "id": "openai-api-key",
+      "name": "OpenAI API Key",
+      "severity": "critical",
+      "regex": "sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}",
+      "description": "OpenAI API key (legacy format)",
+      "risk": "Access to OpenAI API. Attacker can run models, access fine-tuned models, and incur charges.",
+      "fix": "Use OPENAI_API_KEY environment variable.",
+      "rotation_url": "https://platform.openai.com/api-keys"
+    },
+    {
+      "id": "openai-api-key-project",
+      "name": "OpenAI Project API Key",
+      "severity": "critical",
+      "regex": "sk-proj-[a-zA-Z0-9_-]{80,}",
+      "description": "OpenAI project-scoped API key (new format)",
+      "risk": "Access to OpenAI API within a specific project. Can incur significant charges.",
+      "fix": "Use OPENAI_API_KEY environment variable.",
+      "rotation_url": "https://platform.openai.com/api-keys"
+    },
+    {
+      "id": "anthropic-api-key",
+      "name": "Anthropic API Key",
+      "severity": "critical",
+      "regex": "sk-ant-api[0-9]{2}-[A-Za-z0-9_-]{86}-[A-Za-z0-9_-]{6}AA",
+      "description": "Anthropic Claude API key",
+      "risk": "Access to Claude API. Can incur charges and access conversation data.",
+      "fix": "Use ANTHROPIC_API_KEY environment variable.",
+      "rotation_url": "https://console.anthropic.com/settings/keys"
+    },
+    {
+      "id": "cohere-api-key",
+      "name": "Cohere API Key",
+      "severity": "critical",
+      "regex": "(?i)(?:cohere|co_api).*[=:]\\s*['\"]?[a-zA-Z0-9]{40}['\"]?",
+      "description": "Cohere API key",
+      "risk": "Access to Cohere NLP API.",
+      "fix": "Use COHERE_API_KEY environment variable."
+    },
+    {
+      "id": "huggingface-token",
+      "name": "Hugging Face Token",
+      "severity": "critical",
+      "regex": "hf_[a-zA-Z0-9]{34}",
+      "description": "Hugging Face API token",
+      "risk": "Access to Hugging Face models, datasets, and Spaces. Can access private repositories.",
+      "fix": "Use HF_TOKEN or HUGGING_FACE_HUB_TOKEN environment variable.",
+      "rotation_url": "https://huggingface.co/settings/tokens"
+    },
+    {
+      "id": "replicate-api-token",
+      "name": "Replicate API Token",
+      "severity": "critical",
+      "regex": "r8_[a-zA-Z0-9]{38}",
+      "description": "Replicate API token for running ML models",
+      "risk": "Access to Replicate API. Can run models and incur charges.",
+      "fix": "Use REPLICATE_API_TOKEN environment variable."
+    }
+  ]
+}

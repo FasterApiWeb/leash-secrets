@@ -1,0 +1,45 @@
+{
+  "provider": "gcp",
+  "display_name": "Google Cloud Platform",
+  "patterns": [
+    {
+      "id": "gcp-api-key",
+      "name": "Google API Key",
+      "severity": "critical",
+      "regex": "AIza[0-9A-Za-z_-]{35}",
+      "description": "Google Cloud API key for accessing Google services",
+      "risk": "Access to enabled Google APIs. Can incur charges, access data, or abuse quotas.",
+      "fix": "Use GOOGLE_API_KEY environment variable. Restrict key to specific APIs and referrers in the GCP console.",
+      "rotation_url": "https://console.cloud.google.com/apis/credentials"
+    },
+    {
+      "id": "gcp-oauth-client-secret",
+      "name": "Google OAuth Client Secret",
+      "severity": "critical",
+      "regex": "(?i)client_secret\\s*[=:]\\s*['\"]?GOCSPX-[A-Za-z0-9_-]{28}['\"]?",
+      "description": "Google OAuth 2.0 client secret",
+      "risk": "Can be used to impersonate your application and access user data.",
+      "fix": "Store in environment variable or secret manager. Never commit client_secret.json.",
+      "rotation_url": "https://console.cloud.google.com/apis/credentials"
+    },
+    {
+      "id": "gcp-service-account-key",
+      "name": "GCP Service Account Key",
+      "severity": "critical",
+      "regex": "\"type\"\\s*:\\s*\"service_account\"",
+      "description": "Google Cloud service account JSON key file contents",
+      "risk": "Full access to GCP resources granted to the service account. Often has broad permissions.",
+      "fix": "Use Workload Identity Federation instead of key files. If keys are required, mount via secret manager.",
+      "rotation_url": "https://console.cloud.google.com/iam-admin/serviceaccounts"
+    },
+    {
+      "id": "firebase-config",
+      "name": "Firebase Configuration with Sensitive Fields",
+      "severity": "warning",
+      "regex": "(?i)firebase.*(?:apiKey|authDomain|databaseURL|storageBucket)\\s*[=:]",
+      "description": "Firebase configuration object (note: Firebase API keys are safe to expose in client-side code, but the config may include other sensitive values)",
+      "risk": "Low risk for API key alone, but config may include sensitive project details.",
+      "fix": "Firebase client config is designed to be public, but ensure Firestore/RTDB security rules are properly configured."
+    }
+  ]
+}

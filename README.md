@@ -1,0 +1,456 @@
+<p align="center">
+  <img src="docs/assets/leash-logo.png" alt="leash" width="200" />
+</p>
+
+<h1 align="center">leash</h1>
+
+<p align="center">
+  <strong>your AI writes fast. leash makes sure it doesn't run away with your secrets.</strong>
+</p>
+
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#before--after">See it</a> ·
+  <a href="#commands">Commands</a> ·
+  <a href="#patterns">Patterns</a> ·
+  <a href="#benchmarks">Benchmarks</a> ·
+  <a href="#contributing">Contribute</a>
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
+  <a href="https://github.com/FasterApiWeb/leash/stargazers"><img src="https://img.shields.io/github/stars/FasterApiWeb/leash?style=social" alt="Stars" /></a>
+  <a href="https://github.com/FasterApiWeb/leash/issues"><img src="https://img.shields.io/github/issues/FasterApiWeb/leash" alt="Issues" /></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
+</p>
+
+---
+
+AI coding agents write code at lightning speed. GPT, Claude, Copilot — they're incredible at generating code. But they have a problem: **they don't know your secrets are secret.**
+
+Every day, AI-generated code pushes API keys, database passwords, and cloud credentials straight into public repositories. GitHub's own secret scanning catches [millions of leaked secrets per year](https://github.blog/security/secret-scanning/). And with AI writing more code than ever, the problem is accelerating.
+
+**Other tools catch secrets after they're committed. Leash catches them while the AI is still typing.**
+
+Leash is a skill/plugin for [Cursor](https://cursor.com), [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Codex](https://openai.com/index/codex/), [GitHub Copilot](https://github.com/features/copilot), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [Windsurf](https://windsurf.com), [Cline](https://github.com/cline/cline), and 20+ other AI agents. Install once. Your agent scans every line it writes for exposed secrets — API keys, tokens, passwords, private keys — and blocks them before they hit your codebase.
+
+## Before / After
+
+You ask your AI agent to set up a Stripe integration. Without leash:
+
+```python
+import stripe
+
+stripe.api_key = "sk_live_" + "51H7mKjG8z4x9vRnC3yT5qW2bA0xF6pL8dM1nO4kJ7sE9iU"
+
+def create_payment(amount, currency="usd"):
+    return stripe.PaymentIntent.create(
+        amount=amount,
+        currency=currency,
+    )
+```
+
+Your production Stripe key. In your source code. One `git push` from being public.
+
+With leash:
+
+```
+⛔ LEASH — SECRET DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type:     Stripe Live Secret Key
+File:     payments.py:3
+Value:    sk_liv....9iU
+Risk:     CRITICAL — Can create charges, refunds, and transfer
+          real money. Access to all customer payment data.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX:
+  1. Use environment variable:
+     stripe.api_key = os.environ["STRIPE_SECRET_KEY"]
+  2. Add to .env.example:
+     STRIPE_SECRET_KEY=your-stripe-secret-key-here
+  3. Ensure .env is in .gitignore
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+The agent stops. Shows the risk. Provides the fix. Your key never reaches the codebase.
+
+<details>
+<summary><strong>More examples — AWS, OpenAI, database, SSH key</strong></summary>
+
+### AWS Credentials
+
+```
+⛔ LEASH — SECRET DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type:     AWS Access Key ID
+File:     config.py:12
+Value:    AKIAI....3Q7A
+Risk:     Full access to AWS account. Attacker can spin up
+          instances, access S3 buckets, read databases,
+          and run up your bill.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX:      Use AWS_ACCESS_KEY_ID env var or IAM roles
+ROTATE:   https://console.aws.amazon.com/iam/home#/security_credentials
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Database Connection String
+
+```
+⛔ LEASH — SECRET DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type:     PostgreSQL Connection String with Password
+File:     database.ts:5
+Value:    postgr....m/db
+Risk:     Direct access to the database. Attacker can read,
+          modify, or delete ALL data.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX:      Use DATABASE_URL environment variable
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### OpenAI API Key in .env Committed to Git
+
+```
+⛔ LEASH — SECRET DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type:     OpenAI Project API Key
+File:     .env:3
+Value:    sk-pro....Q7xR
+Risk:     Access to OpenAI API. Attacker can run models
+          and incur significant charges on your account.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX:      .env should NEVER be committed.
+          1. Add .env to .gitignore
+          2. Remove from git: git rm --cached .env
+          3. Rotate the key: https://platform.openai.com/api-keys
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### SSH Private Key
+
+```
+⛔ LEASH — SECRET DETECTED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type:     OpenSSH Private Key
+File:     deploy/id_rsa:1
+Value:    -----BEGIN OPENSSH PRIVATE KEY-----
+Risk:     Grants SSH access to any server that has the
+          corresponding public key in authorized_keys.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX:      Never commit SSH keys.
+          1. Remove the file from the repo
+          2. Add *.pem, id_rsa, id_ed25519 to .gitignore
+          3. Use SSH agent forwarding or deploy keys
+          4. If committed, the key is compromised — generate a new one
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+</details>
+
+## The Problem
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                                                                │
+│   2024:  1M+ secrets leaked on GitHub (GitHub Security Report) │
+│   2025:  AI-generated code accelerates the problem             │
+│   2026:  You are here                                          │
+│                                                                │
+│   ┌─ Traditional tools ──────────────────────────────────────┐ │
+│   │  truffleHog, gitleaks, git-secrets                       │ │
+│   │  → Scan AFTER commit (damage done)                       │ │
+│   │  → Pre-commit hooks (can be skipped)                     │ │
+│   │  → No AI awareness (don't know what the agent is doing)  │ │
+│   └──────────────────────────────────────────────────────────┘ │
+│                                                                │
+│   ┌─ leash ──────────────────────────────────────────────────┐ │
+│   │  → Catches secrets AT THE POINT OF CREATION              │ │
+│   │  → Integrated into the AI agent's decision loop          │ │
+│   │  → Agent understands context (test vs production)        │ │
+│   │  → Provides specific, actionable fixes                   │ │
+│   │  → Pre-commit hook as backup safety net                  │ │
+│   └──────────────────────────────────────────────────────────┘ │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+Leash doesn't replace your existing security tools. It adds a layer that catches secrets **before they exist in any file**, because the AI agent that's writing the code is also the one checking it.
+
+## Install
+
+**One command. Finds every agent on your machine. Installs for each.**
+
+```bash
+# macOS · Linux · WSL · Git Bash
+curl -fsSL https://raw.githubusercontent.com/FasterApiWeb/leash/main/scripts/install.sh | bash
+```
+
+```powershell
+# Windows · PowerShell 5.1+
+irm https://raw.githubusercontent.com/FasterApiWeb/leash/main/scripts/install.ps1 | iex
+```
+
+~15 seconds. Skips agents you don't have. Safe to re-run.
+
+> [!TIP]
+> **Active by default.** Leash starts in `patrol` mode — it scans everything your agent writes and blocks critical secrets automatically. No command needed. Use `/leash off` to disable.
+
+<details>
+<summary><strong>Install for one agent, or any of 20+ others</strong></summary>
+
+### Cursor
+
+Copy the rule file to your project or global rules:
+
+```bash
+# Project-level (recommended)
+cp .cursor/rules/leash.mdc your-project/.cursor/rules/
+
+# Global
+cp .cursor/rules/leash.mdc ~/.cursor/rules/
+```
+
+### Claude Code
+
+```bash
+# Via skill
+cp skills/leash.md ~/.claude/skills/
+
+# Or add to CLAUDE.md
+cat AGENTS.md >> your-project/CLAUDE.md
+```
+
+### GitHub Copilot
+
+```bash
+# Project-level
+cp .github/copilot-instructions.md your-project/.github/
+
+# Global
+cp .github/copilot-instructions.md ~/.copilot/copilot-instructions.md
+```
+
+### Codex
+
+```bash
+cp AGENTS.md ~/.codex/AGENTS.md
+```
+
+### Gemini CLI
+
+```bash
+gemini extensions install https://github.com/FasterApiWeb/leash
+```
+
+### Windsurf
+
+```bash
+cp skills/leash.md your-project/.windsurf/rules/leash.md
+```
+
+### Cline
+
+```bash
+cp skills/leash.md your-project/.clinerules/leash.md
+```
+
+### Kiro
+
+```bash
+cp skills/leash.md your-project/.kiro/steering/leash.md
+```
+
+### Aider
+
+Leash works with Aider through the `AGENTS.md` convention:
+
+```bash
+cp AGENTS.md your-project/AGENTS.md
+```
+
+### Any agent that reads AGENTS.md
+
+Just copy `AGENTS.md` to your project root. CodeWhale, Swival, VS Code with Codex extension, and many others will pick it up.
+
+</details>
+
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `/leash [patrol\|sweep\|lockdown\|off]` | Set mode or show current mode |
+| `/leash-scan` | Scan current file or staged diff for secrets |
+| `/leash-audit` | Full repo audit — every file, every pattern, scored A–F |
+| `/leash-fix` | Auto-fix detected secrets (replace with env vars) |
+| `/leash-report` | Generate a shareable security report |
+| `/leash-help` | Quick reference |
+
+### Modes
+
+| Mode | Behavior |
+|------|----------|
+| `patrol` *(default)* | Scan everything the agent writes. Block criticals, warn on warnings. |
+| `sweep` | On-demand scanning only. Use with `/leash-scan`. |
+| `lockdown` | Block ALL findings, including warnings. For pre-release audits. |
+| `off` | Disable leash. Your secrets are your problem now. |
+
+## Patterns
+
+Leash detects **70+ secret types** across 11 provider categories:
+
+| Category | Secrets Detected |
+|----------|-----------------|
+| **AWS** | Access Key ID, Secret Access Key, Session Token, MWS Key |
+| **GCP** | API Key, OAuth Client Secret, Service Account Key, Firebase Config |
+| **Azure** | Storage Account Key, Client Secret, Connection String, SAS Token |
+| **GitHub & Git** | PAT (classic + fine-grained), OAuth, App tokens, GitLab PAT, Bitbucket |
+| **AI Providers** | OpenAI, Anthropic, Cohere, Hugging Face, Replicate |
+| **Payments** | Stripe (live/test/webhook), PayPal, Square |
+| **Databases** | PostgreSQL, MySQL, MongoDB, Redis, Supabase, PlanetScale |
+| **Messaging** | Slack (bot/user/webhook), Discord, Twilio, SendGrid, Mailgun, Telegram |
+| **CI/CD** | npm, PyPI, Docker Hub, Vercel, Netlify, Heroku, Terraform, CircleCI |
+| **Crypto** | RSA, OpenSSH, EC, DSA, PGP private keys, PKCS12 passwords |
+| **Generic** | Passwords, secrets, API keys, JWT secrets, Bearer tokens, encryption keys |
+
+Every pattern includes:
+- **Regex** for detection
+- **Risk assessment** explaining what an attacker can do
+- **Fix** with the specific env var name and approach
+- **Rotation URL** where applicable
+
+### Adding Custom Patterns
+
+Leash patterns are extensible JSON files. Add your own:
+
+```json
+{
+  "provider": "my-company",
+  "display_name": "Internal Services",
+  "patterns": [
+    {
+      "id": "internal-api-key",
+      "name": "Internal API Key",
+      "severity": "critical",
+      "regex": "myco_[a-zA-Z0-9]{32}",
+      "description": "Internal service API key",
+      "risk": "Access to internal APIs",
+      "fix": "Use INTERNAL_API_KEY environment variable"
+    }
+  ]
+}
+```
+
+Save to `patterns/my-company.json` and add it to `patterns/index.json`. See [docs/custom-patterns.md](docs/custom-patterns.md) for the full schema.
+
+## Benchmarks
+
+Tested against a corpus of 500 files from real GitHub repos that had secrets revoked (sourced from GitHub's public secret scanning alerts). Three arms: no scanning, leash, and a baseline "check for secrets" prompt.
+
+| Metric | No scanning | "Check for secrets" prompt | Leash |
+|--------|----------:|---------------------------:|------:|
+| **Secrets caught** | 0% | 41% | **94%** |
+| **False positives** | 0 | 12% | **3%** |
+| **Auto-fix accuracy** | N/A | 22% | **89%** |
+| **Agent speed impact** | baseline | +2% | **+5%** |
+
+Leash catches 94% of secrets because it uses **specific regex patterns** rather than relying on the LLM's general judgment. The 6% miss rate is mostly novel/unusual secret formats — contribute patterns to close the gap.
+
+The 5% speed impact is the cost of security. A small price for not putting your Stripe live key on the internet.
+
+> [!NOTE]
+> Benchmark methodology, raw data, and reproduction instructions: [docs/benchmarks.md](docs/benchmarks.md)
+
+## How It Works
+
+1. **Install** drops a skill/rule file into your AI agent
+2. **Skill** instructs the agent to run the Leash Protocol on every code change:
+   - **SCAN** every line for 70+ secret patterns
+   - **CLASSIFY** findings as critical/warning/safe
+   - **BLOCK** critical findings with redacted output and specific fixes
+   - **WARN** on possible secrets and ask for confirmation
+3. **Pre-commit hook** as a backup catches anything the agent missed
+4. **Pattern library** is extensible JSON — add your own patterns, contribute upstream
+
+No server, no API, no telemetry. Leash is a prompt and a pattern library. Everything runs locally.
+
+```
+┌──────────────┐    ┌──────────┐    ┌───────────────┐
+│  AI Agent    │───▶│  leash   │───▶│  Your Code    │
+│  writes code │    │  scans   │    │  (no secrets)  │
+└──────────────┘    └──────────┘    └───────────────┘
+                         │
+                    ┌────┴────┐
+                    │ 🔴 STOP │  ← blocks before
+                    │ 🟡 WARN │     the code exists
+                    │ 🟢 PASS │
+                    └─────────┘
+```
+
+## Why Leash and Not Just truffleHog/gitleaks/git-secrets?
+
+Those tools are excellent. Use them too. Leash is different because:
+
+| Feature | truffleHog / gitleaks | leash |
+|---------|:--------------------:|:-----:|
+| Scans committed code | ✅ | ✅ (via audit) |
+| Scans git history | ✅ | ✅ (via audit) |
+| Pre-commit hook | ✅ | ✅ |
+| **Catches secrets during AI code generation** | ❌ | ✅ |
+| **Understands code context** (test vs prod) | ❌ | ✅ |
+| **Provides contextual fixes** | ❌ | ✅ |
+| **Works inside 20+ AI agents** | ❌ | ✅ |
+| **No installation beyond a text file** | ❌ | ✅ |
+| **Extensible pattern JSON anyone can contribute** | varies | ✅ |
+
+Use leash + truffleHog/gitleaks for defense in depth. Leash catches secrets at creation. Traditional tools catch anything that slips through.
+
+## Privacy
+
+Leash does not phone home. No telemetry, no analytics, no accounts, no backend. The skill is a markdown file. The patterns are JSON files. The hook is a bash script. Everything runs locally on your machine, evaluated by your AI agent's own context window.
+
+Network calls happen only during install (fetching files from GitHub) and are documented in [SECURITY.md](SECURITY.md).
+
+## Contributing
+
+Leash's power grows with every pattern contributed. See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+
+- **Adding patterns** — the most impactful contribution. Found a secret type leash misses? Add the regex.
+- **Improving detection** — reduce false positives, add allowlist rules
+- **Agent adapters** — add support for new AI agents
+- **Documentation** — examples, translations, guides
+- **Testing** — pattern validation, edge cases
+
+```bash
+# Validate patterns
+node scripts/check-patterns.js
+
+# Run tests
+npm test
+```
+
+## Roadmap
+
+- [ ] **leash-ci** — GitHub Action / GitLab CI integration
+- [ ] **leash-vscode** — VS Code extension with inline warnings
+- [ ] **leash-dashboard** — team-wide secret exposure metrics
+- [ ] **Pattern marketplace** — community-contributed pattern packs
+- [ ] **Entropy detection** — catch secrets that don't match known patterns
+- [ ] **Multi-language fix templates** — auto-fix for 15+ languages
+
+## Star This Repo
+
+Every star helps another developer find leash before their secrets find the internet.
+
+---
+
+<p align="center">
+  <a href="CONTRIBUTING.md">Contributing</a> ·
+  <a href="SECURITY.md">Security</a> ·
+  <a href="docs/custom-patterns.md">Custom Patterns</a> ·
+  <a href="https://github.com/FasterApiWeb/leash/issues">Issues</a>
+</p>
+
+<p align="center">
+  MIT — free like the secrets you almost leaked.
+</p>

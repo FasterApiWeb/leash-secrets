@@ -1,0 +1,64 @@
+{
+  "provider": "database",
+  "display_name": "Databases & Data Stores",
+  "patterns": [
+    {
+      "id": "postgres-connection-string",
+      "name": "PostgreSQL Connection String with Password",
+      "severity": "critical",
+      "regex": "postgres(?:ql)?://[^:]+:[^@]+@[^/]+/\\w+",
+      "description": "PostgreSQL connection URI containing username and password",
+      "risk": "Direct access to the database. Attacker can read, modify, or delete all data.",
+      "fix": "Use DATABASE_URL environment variable. Use connection pooler (PgBouncer) with SSL.",
+      "false_positive_hints": ["postgres://user:password@localhost/ in docs is usually an example"]
+    },
+    {
+      "id": "mysql-connection-string",
+      "name": "MySQL Connection String with Password",
+      "severity": "critical",
+      "regex": "mysql://[^:]+:[^@]+@[^/]+/\\w+",
+      "description": "MySQL connection URI containing username and password",
+      "risk": "Direct database access with embedded credentials.",
+      "fix": "Use DATABASE_URL or MYSQL_PASSWORD environment variables."
+    },
+    {
+      "id": "mongodb-connection-string",
+      "name": "MongoDB Connection String with Password",
+      "severity": "critical",
+      "regex": "mongodb(?:\\+srv)?://[^:]+:[^@]+@[^/]+",
+      "description": "MongoDB connection URI containing credentials",
+      "risk": "Direct access to MongoDB. Can read/write all collections in the database.",
+      "fix": "Use MONGODB_URI environment variable. Enable authentication and TLS.",
+      "rotation_url": "https://cloud.mongodb.com/"
+    },
+    {
+      "id": "redis-connection-with-password",
+      "name": "Redis Connection with Password",
+      "severity": "critical",
+      "regex": "redis://:[^@]+@[^/]+",
+      "description": "Redis connection URI with embedded password",
+      "risk": "Access to Redis. Can read cached data, session tokens, and queue messages.",
+      "fix": "Use REDIS_URL environment variable."
+    },
+    {
+      "id": "supabase-service-role-key",
+      "name": "Supabase Service Role Key",
+      "severity": "critical",
+      "regex": "(?i)(?:supabase|SUPABASE).*(?:service_role|SERVICE_ROLE).*[=:]\\s*['\"]?eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+['\"]?",
+      "description": "Supabase service role key (bypasses Row Level Security)",
+      "risk": "CRITICAL: Bypasses all RLS policies. Full read/write access to all tables.",
+      "fix": "Use SUPABASE_SERVICE_ROLE_KEY env var. NEVER expose in client-side code.",
+      "rotation_url": "https://supabase.com/dashboard/project/_/settings/api"
+    },
+    {
+      "id": "planetscale-password",
+      "name": "PlanetScale Database Password",
+      "severity": "critical",
+      "regex": "pscale_pw_[a-zA-Z0-9_-]{43}",
+      "description": "PlanetScale database branch password",
+      "risk": "Access to PlanetScale database branch.",
+      "fix": "Use DATABASE_URL environment variable.",
+      "rotation_url": "https://app.planetscale.com/"
+    }
+  ]
+}

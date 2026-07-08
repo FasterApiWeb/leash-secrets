@@ -1,0 +1,11 @@
+# Default owner for everything
+* @FasterApiWeb
+
+# Patterns — security-sensitive, require maintainer review
+/patterns/ @FasterApiWeb
+
+# Skills — core detection logic
+/skills/ @FasterApiWeb
+
+# CI/CD workflows
+/.github/workflows/ @FasterApiWeb

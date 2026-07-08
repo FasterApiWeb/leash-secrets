@@ -1,0 +1,80 @@
+{
+  "provider": "ci-cd",
+  "display_name": "CI/CD, Infrastructure & DevOps",
+  "patterns": [
+    {
+      "id": "npm-token",
+      "name": "npm Access Token",
+      "severity": "critical",
+      "regex": "npm_[a-zA-Z0-9]{36}",
+      "description": "npm registry authentication token",
+      "risk": "Can publish packages to npm under your account. Supply chain attack vector.",
+      "fix": "Use NPM_TOKEN environment variable. Set up npm 2FA.",
+      "rotation_url": "https://www.npmjs.com/settings/~/tokens"
+    },
+    {
+      "id": "pypi-token",
+      "name": "PyPI API Token",
+      "severity": "critical",
+      "regex": "pypi-[A-Za-z0-9_-]{100,}",
+      "description": "PyPI package registry API token",
+      "risk": "Can upload packages to PyPI. Critical supply chain attack vector.",
+      "fix": "Use TWINE_PASSWORD environment variable with trusted publishing.",
+      "rotation_url": "https://pypi.org/manage/account/"
+    },
+    {
+      "id": "docker-hub-token",
+      "name": "Docker Hub Access Token",
+      "severity": "critical",
+      "regex": "dckr_pat_[A-Za-z0-9_-]{28,}",
+      "description": "Docker Hub personal access token",
+      "risk": "Can push/pull images, manage repositories on Docker Hub.",
+      "fix": "Use DOCKER_TOKEN environment variable."
+    },
+    {
+      "id": "vercel-token",
+      "name": "Vercel Token",
+      "severity": "critical",
+      "regex": "(?i)(?:vercel|VERCEL).*(?:token|TOKEN)\\s*[=:]\\s*['\"]?[A-Za-z0-9]{24,}['\"]?",
+      "description": "Vercel deployment API token",
+      "risk": "Can deploy, manage, and access all Vercel projects.",
+      "fix": "Use VERCEL_TOKEN environment variable."
+    },
+    {
+      "id": "netlify-token",
+      "name": "Netlify Access Token",
+      "severity": "critical",
+      "regex": "(?i)(?:netlify|NETLIFY).*(?:token|auth_token)\\s*[=:]\\s*['\"]?[a-zA-Z0-9_-]{40,}['\"]?",
+      "description": "Netlify personal access token",
+      "risk": "Can deploy sites, manage DNS, and access build logs.",
+      "fix": "Use NETLIFY_AUTH_TOKEN environment variable."
+    },
+    {
+      "id": "heroku-api-key",
+      "name": "Heroku API Key",
+      "severity": "critical",
+      "regex": "(?i)heroku.*(?:api_key|API_KEY)\\s*[=:]\\s*['\"]?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['\"]?",
+      "description": "Heroku account API key",
+      "risk": "Full access to Heroku apps — deploy, scale, access databases, read config vars.",
+      "fix": "Use HEROKU_API_KEY environment variable."
+    },
+    {
+      "id": "terraform-cloud-token",
+      "name": "Terraform Cloud API Token",
+      "severity": "critical",
+      "regex": "(?i)(?:TFE_TOKEN|terraform_cloud_token)\\s*[=:]\\s*['\"]?[a-zA-Z0-9.]{14,}['\"]?",
+      "description": "Terraform Cloud/Enterprise API token",
+      "risk": "Can manage infrastructure state, trigger applies, access sensitive variables.",
+      "fix": "Use TFE_TOKEN environment variable."
+    },
+    {
+      "id": "circleci-token",
+      "name": "CircleCI API Token",
+      "severity": "critical",
+      "regex": "(?i)(?:circle|CIRCLE).*(?:token|TOKEN)\\s*[=:]\\s*['\"]?[a-f0-9]{40}['\"]?",
+      "description": "CircleCI personal or project API token",
+      "risk": "Can trigger builds, access build artifacts, and read environment variables.",
+      "fix": "Use CIRCLECI_TOKEN environment variable."
+    }
+  ]
+}

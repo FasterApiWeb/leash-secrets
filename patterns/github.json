@@ -1,0 +1,81 @@
+{
+  "provider": "github",
+  "display_name": "GitHub & Git Platforms",
+  "patterns": [
+    {
+      "id": "github-pat-fine-grained",
+      "name": "GitHub Fine-Grained Personal Access Token",
+      "severity": "critical",
+      "regex": "github_pat_[0-9a-zA-Z_]{82}",
+      "description": "GitHub fine-grained personal access token",
+      "risk": "Access to GitHub repositories, issues, PRs, and actions depending on token scope.",
+      "fix": "Use GITHUB_TOKEN env var. For CI, use the automatic GITHUB_TOKEN or deploy keys.",
+      "rotation_url": "https://github.com/settings/tokens"
+    },
+    {
+      "id": "github-pat-classic",
+      "name": "GitHub Classic Personal Access Token",
+      "severity": "critical",
+      "regex": "ghp_[0-9a-zA-Z]{36}",
+      "description": "GitHub classic personal access token",
+      "risk": "Broad access to GitHub resources depending on selected scopes.",
+      "fix": "Migrate to fine-grained PAT with minimal scope. Store in environment variable.",
+      "rotation_url": "https://github.com/settings/tokens"
+    },
+    {
+      "id": "github-oauth-token",
+      "name": "GitHub OAuth Access Token",
+      "severity": "critical",
+      "regex": "gho_[0-9a-zA-Z]{36}",
+      "description": "GitHub OAuth access token",
+      "risk": "Access to GitHub on behalf of a user.",
+      "fix": "Store in secure session storage, never in source code."
+    },
+    {
+      "id": "github-app-token",
+      "name": "GitHub App Installation Token",
+      "severity": "critical",
+      "regex": "ghs_[0-9a-zA-Z]{36}",
+      "description": "GitHub App installation access token (short-lived)",
+      "risk": "Grants permissions of the GitHub App installation.",
+      "fix": "These are short-lived and should be generated at runtime via the App's private key."
+    },
+    {
+      "id": "github-refresh-token",
+      "name": "GitHub App Refresh Token",
+      "severity": "critical",
+      "regex": "ghr_[0-9a-zA-Z]{36}",
+      "description": "GitHub App user-to-server refresh token",
+      "risk": "Can generate new access tokens for a user.",
+      "fix": "Store in encrypted session storage, never in source code."
+    },
+    {
+      "id": "gitlab-pat",
+      "name": "GitLab Personal Access Token",
+      "severity": "critical",
+      "regex": "glpat-[0-9a-zA-Z_-]{20}",
+      "description": "GitLab personal access token",
+      "risk": "Access to GitLab repositories and API depending on scope.",
+      "fix": "Use CI/CD variables or environment variables.",
+      "rotation_url": "https://gitlab.com/-/user_settings/personal_access_tokens"
+    },
+    {
+      "id": "gitlab-pipeline-trigger",
+      "name": "GitLab Pipeline Trigger Token",
+      "severity": "critical",
+      "regex": "glptt-[0-9a-f]{40}",
+      "description": "GitLab pipeline trigger token",
+      "risk": "Can trigger CI/CD pipelines in a project.",
+      "fix": "Store in CI/CD variables."
+    },
+    {
+      "id": "bitbucket-app-password",
+      "name": "Bitbucket App Password",
+      "severity": "critical",
+      "regex": "(?i)bitbucket.*(?:password|secret|token)\\s*[=:]\\s*['\"]?[A-Za-z0-9]{20,}['\"]?",
+      "description": "Bitbucket app password or API token",
+      "risk": "Access to Bitbucket repositories and API.",
+      "fix": "Use environment variables or Bitbucket Pipelines secure variables."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "name": "leash",
+  "version": "1.0.0",
+  "description": "Keep your secrets on a leash — AI agent skill that catches exposed API keys, tokens, and credentials before they hit your codebase",
+  "main": "src/index.js",
+  "bin": {
+    "leash": "bin/leash.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node scripts/check-patterns.js && node tests/test-patterns.js",
+    "check-patterns": "node scripts/check-patterns.js",
+    "validate": "node scripts/check-patterns.js",
+    "scan": "node bin/leash.js scan",
+    "docs:serve": "mkdocs serve",
+    "docs:build": "mkdocs build --strict",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "security",
+    "secrets",
+    "api-keys",
+    "credentials",
+    "secret-detection",
+    "secret-scanning",
+    "ai-agent",
+    "cursor",
+    "claude-code",
+    "codex",
+    "copilot",
+    "gemini",
+    "windsurf",
+    "cline",
+    "pre-commit",
+    "devsecops",
+    "leash"
+  ],
+  "author": "eeshu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FasterApiWeb/leash.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FasterApiWeb/leash/issues"
+  },
+  "homepage": "https://github.com/FasterApiWeb/leash#readme",
+  "files": [
+    "src/",
+    "bin/",
+    "skills/",
+    "patterns/",
+    "hooks/",
+    "scripts/",
+    "AGENTS.md",
+    ".cursor/rules/leash.mdc",
+    ".github/copilot-instructions.md"
+  ]
+}

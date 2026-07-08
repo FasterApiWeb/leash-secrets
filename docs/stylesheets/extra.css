@@ -1,0 +1,48 @@
+:root {
+  --md-primary-fg-color: #2563eb;
+  --md-accent-fg-color: #4f46e5;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #3b82f6;
+  --md-accent-fg-color: #6366f1;
+}
+
+.md-header {
+  font-weight: 600;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+}
+
+.leash-hero {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.leash-hero img {
+  max-width: 160px;
+  margin-bottom: 1rem;
+}
+
+.leash-stats {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+}
+
+.leash-stat {
+  text-align: center;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  background: var(--md-code-bg-color);
+}
+
+.leash-stat strong {
+  display: block;
+  font-size: 1.8rem;
+  color: var(--md-primary-fg-color);
+}

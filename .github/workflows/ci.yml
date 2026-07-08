@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Validate pattern files
+        run: node scripts/check-patterns.js
+
+      - name: Run pattern tests
+        run: node tests/test-patterns.js
+
+      - name: Verify install script syntax
+        run: bash -n scripts/install.sh
+
+      - name: Verify pre-commit hook syntax
+        run: bash -n hooks/pre-commit.sh
+
+      - name: Check EditorConfig compliance
+        uses: editorconfig-checker/action-editorconfig-checker@main
+        continue-on-error: true
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure no real secrets in repo
+        run: |
+          echo "Scanning for common secret prefixes in non-test files..."
+          FOUND=0
+          for pattern in "sk_live_" "AKIA[A-Z0-9]{12}" "-----BEGIN RSA PRIVATE KEY-----"; do
+            if grep -r --include="*.md" --include="*.json" --include="*.js" --include="*.sh" \
+               -l "$pattern" . 2>/dev/null | grep -v "tests/fixtures" | grep -v "patterns/" | grep -v "node_modules"; then
+              echo "WARNING: Possible secret pattern found: $pattern"
+              FOUND=1
+            fi
+          done
+          if [ $FOUND -eq 1 ]; then
+            echo "::warning::Review the files above for potential secrets"
+          else
+            echo "No secrets found outside test fixtures."
+          fi

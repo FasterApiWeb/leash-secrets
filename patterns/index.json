@@ -1,0 +1,25 @@
+{
+  "$schema": "./schema.json",
+  "name": "leash-patterns",
+  "version": "1.0.0",
+  "description": "Master registry of all leash secret detection patterns",
+  "pattern_files": [
+    "aws.json",
+    "gcp.json",
+    "azure.json",
+    "github.json",
+    "openai.json",
+    "stripe.json",
+    "database.json",
+    "messaging.json",
+    "ci-cd.json",
+    "crypto.json",
+    "generic.json"
+  ],
+  "severity_levels": {
+    "critical": "Live secret with immediate exposure risk. Block the commit.",
+    "warning": "Possible secret that needs human confirmation.",
+    "info": "Informational finding, not necessarily a secret."
+  },
+  "contributing": "See docs/custom-patterns.md for how to add new patterns."
+}

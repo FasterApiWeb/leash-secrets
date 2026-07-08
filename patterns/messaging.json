@@ -1,0 +1,93 @@
+{
+  "provider": "messaging",
+  "display_name": "Messaging, Email & Communication",
+  "patterns": [
+    {
+      "id": "slack-bot-token",
+      "name": "Slack Bot Token",
+      "severity": "critical",
+      "regex": "xoxb-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24}",
+      "description": "Slack bot user OAuth token",
+      "risk": "Can read messages, post as the bot, access channels, and download files.",
+      "fix": "Use SLACK_BOT_TOKEN environment variable.",
+      "rotation_url": "https://api.slack.com/apps"
+    },
+    {
+      "id": "slack-user-token",
+      "name": "Slack User Token",
+      "severity": "critical",
+      "regex": "xoxp-[0-9]{10,13}-[0-9]{10,13}-[0-9]{10,13}-[a-f0-9]{32}",
+      "description": "Slack user OAuth token",
+      "risk": "Can act as the user — read DMs, post messages, access private channels.",
+      "fix": "Use SLACK_USER_TOKEN environment variable. Prefer bot tokens over user tokens."
+    },
+    {
+      "id": "slack-webhook-url",
+      "name": "Slack Incoming Webhook URL",
+      "severity": "warning",
+      "regex": "https://hooks\\.slack\\.com/services/T[0-9A-Z]{8,}/B[0-9A-Z]{8,}/[a-zA-Z0-9]{24}",
+      "description": "Slack incoming webhook URL",
+      "risk": "Can post messages to a specific Slack channel.",
+      "fix": "Use SLACK_WEBHOOK_URL environment variable."
+    },
+    {
+      "id": "discord-bot-token",
+      "name": "Discord Bot Token",
+      "severity": "critical",
+      "regex": "[MN][A-Za-z0-9]{23,}\\.[A-Za-z0-9_-]{6}\\.[A-Za-z0-9_-]{27,}",
+      "description": "Discord bot authentication token",
+      "risk": "Full control of the Discord bot — can read/send messages, manage servers.",
+      "fix": "Use DISCORD_TOKEN environment variable.",
+      "rotation_url": "https://discord.com/developers/applications"
+    },
+    {
+      "id": "discord-webhook-url",
+      "name": "Discord Webhook URL",
+      "severity": "warning",
+      "regex": "https://discord(?:app)?\\.com/api/webhooks/[0-9]+/[A-Za-z0-9_-]+",
+      "description": "Discord webhook URL",
+      "risk": "Can post messages and embeds to a specific Discord channel.",
+      "fix": "Use DISCORD_WEBHOOK_URL environment variable."
+    },
+    {
+      "id": "twilio-auth-token",
+      "name": "Twilio Auth Token",
+      "severity": "critical",
+      "regex": "(?i)twilio.*(?:auth_token|AUTH_TOKEN)\\s*[=:]\\s*['\"]?[a-f0-9]{32}['\"]?",
+      "description": "Twilio account auth token",
+      "risk": "Can send SMS/calls, access call logs, and incur charges.",
+      "fix": "Use TWILIO_AUTH_TOKEN environment variable.",
+      "rotation_url": "https://console.twilio.com/"
+    },
+    {
+      "id": "sendgrid-api-key",
+      "name": "SendGrid API Key",
+      "severity": "critical",
+      "regex": "SG\\.[a-zA-Z0-9_-]{22}\\.[a-zA-Z0-9_-]{43}",
+      "description": "SendGrid email API key",
+      "risk": "Can send emails from your domain. Attacker can send phishing emails as you.",
+      "fix": "Use SENDGRID_API_KEY environment variable.",
+      "rotation_url": "https://app.sendgrid.com/settings/api_keys"
+    },
+    {
+      "id": "mailgun-api-key",
+      "name": "Mailgun API Key",
+      "severity": "critical",
+      "regex": "(?i)(?:mailgun|MAILGUN).*(?:api_key|API_KEY|key)\\s*[=:]\\s*['\"]?key-[a-f0-9]{32}['\"]?",
+      "description": "Mailgun API key",
+      "risk": "Can send emails, manage domains, and access logs.",
+      "fix": "Use MAILGUN_API_KEY environment variable."
+    },
+    {
+      "id": "telegram-bot-token",
+      "name": "Telegram Bot Token",
+      "severity": "critical",
+      "regex": "[0-9]{8,10}:[A-Za-z0-9_-]{35}",
+      "description": "Telegram Bot API token",
+      "risk": "Full control of the Telegram bot — read messages, send messages, manage groups.",
+      "fix": "Use TELEGRAM_BOT_TOKEN environment variable.",
+      "rotation_url": "https://t.me/BotFather",
+      "false_positive_hints": ["High false positive rate — verify the surrounding context mentions Telegram or bot"]
+    }
+  ]
+}

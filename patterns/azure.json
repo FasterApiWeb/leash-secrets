@@ -1,0 +1,44 @@
+{
+  "provider": "azure",
+  "display_name": "Microsoft Azure",
+  "patterns": [
+    {
+      "id": "azure-storage-account-key",
+      "name": "Azure Storage Account Key",
+      "severity": "critical",
+      "regex": "(?i)(?:AccountKey|azure_storage_key|AZURE_STORAGE_KEY)\\s*[=:]\\s*['\"]?[A-Za-z0-9+/=]{88}['\"]?",
+      "description": "Azure Storage account access key",
+      "risk": "Full read/write access to all containers and blobs in the storage account.",
+      "fix": "Use Azure Managed Identity, SAS tokens with minimal scope, or AZURE_STORAGE_KEY env var.",
+      "rotation_url": "https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts"
+    },
+    {
+      "id": "azure-client-secret",
+      "name": "Azure AD Client Secret",
+      "severity": "critical",
+      "regex": "(?i)(?:AZURE_CLIENT_SECRET|client_secret)\\s*[=:]\\s*['\"]?[A-Za-z0-9~._-]{34,}['\"]?",
+      "description": "Azure Active Directory application client secret",
+      "risk": "Can authenticate as the application and access all resources the app registration has permissions for.",
+      "fix": "Use AZURE_CLIENT_SECRET env var or Azure Key Vault.",
+      "rotation_url": "https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps"
+    },
+    {
+      "id": "azure-connection-string",
+      "name": "Azure Service Connection String",
+      "severity": "critical",
+      "regex": "(?i)(?:DefaultEndpointsProtocol|AccountName)=.*(?:AccountKey|SharedAccessSignature)=[A-Za-z0-9+/=]+",
+      "description": "Azure service connection string containing credentials",
+      "risk": "Direct access to Azure services (Storage, Service Bus, Cosmos DB, etc.).",
+      "fix": "Use Azure Key Vault or environment variables for connection strings."
+    },
+    {
+      "id": "azure-sas-token",
+      "name": "Azure SAS Token",
+      "severity": "warning",
+      "regex": "(?:sv=\\d{4}-\\d{2}-\\d{2}&)(?:.*&)?sig=[A-Za-z0-9%+/=]+",
+      "description": "Azure Shared Access Signature token (may be time-limited)",
+      "risk": "Grants scoped access to Azure resources. Risk depends on scope and expiry.",
+      "fix": "SAS tokens should be generated at runtime with minimal scope and short expiry."
+    }
+  ]
+}

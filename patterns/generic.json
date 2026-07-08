@@ -1,0 +1,93 @@
+{
+  "provider": "generic",
+  "display_name": "Generic Secrets & Credentials",
+  "patterns": [
+    {
+      "id": "generic-password-assignment",
+      "name": "Hardcoded Password Assignment",
+      "severity": "warning",
+      "regex": "(?i)(?:password|passwd|pwd|pass)\\s*[=:]\\s*['\"][^'\"]{8,}['\"]",
+      "description": "Variable named 'password' (or variant) assigned a string literal",
+      "risk": "Hardcoded password in source code. Risk depends on what it authenticates.",
+      "fix": "Use an environment variable or secret manager.",
+      "false_positive_hints": [
+        "Ignore if value is clearly placeholder: 'password123', 'changeme', 'your-password-here'",
+        "Ignore in test files using known test credentials",
+        "Ignore password validation regexes or schemas"
+      ]
+    },
+    {
+      "id": "generic-secret-assignment",
+      "name": "Hardcoded Secret Assignment",
+      "severity": "warning",
+      "regex": "(?i)(?:secret|SECRET|api_secret|app_secret|client_secret)\\s*[=:]\\s*['\"][^'\"]{16,}['\"]",
+      "description": "Variable named 'secret' (or variant) assigned a long string literal",
+      "risk": "Likely an API secret or signing key. Risk depends on the service.",
+      "fix": "Use an environment variable named after the service (e.g., STRIPE_SECRET_KEY)."
+    },
+    {
+      "id": "generic-api-key-assignment",
+      "name": "Hardcoded API Key Assignment",
+      "severity": "warning",
+      "regex": "(?i)(?:api_key|apikey|api-key|API_KEY)\\s*[=:]\\s*['\"][^'\"]{16,}['\"]",
+      "description": "Variable named 'api_key' (or variant) assigned a long string literal",
+      "risk": "Likely a real API key. Risk depends on the service.",
+      "fix": "Identify the service and use the appropriate environment variable."
+    },
+    {
+      "id": "generic-token-assignment",
+      "name": "Hardcoded Token Assignment",
+      "severity": "warning",
+      "regex": "(?i)(?:auth_token|access_token|bearer_token|AUTH_TOKEN|ACCESS_TOKEN)\\s*[=:]\\s*['\"][^'\"]{20,}['\"]",
+      "description": "Variable named 'token' (or variant) assigned a long string literal",
+      "risk": "Likely an authentication token. Risk depends on the service and scope.",
+      "fix": "Use an environment variable. Tokens should be obtained at runtime via OAuth/OIDC."
+    },
+    {
+      "id": "generic-jwt-secret",
+      "name": "JWT Signing Secret",
+      "severity": "critical",
+      "regex": "(?i)(?:jwt_secret|JWT_SECRET|signing_key|SIGNING_KEY|SECRET_KEY)\\s*[=:]\\s*['\"][^'\"]{16,}['\"]",
+      "description": "JWT signing secret hardcoded in source code",
+      "risk": "Attacker can forge valid JWT tokens and bypass authentication entirely.",
+      "fix": "Use JWT_SECRET environment variable. Use RS256 with public/private key pair for production."
+    },
+    {
+      "id": "generic-basic-auth-url",
+      "name": "URL with Basic Auth Credentials",
+      "severity": "critical",
+      "regex": "https?://[^:]+:[^@]+@(?!example\\.com|localhost)",
+      "description": "URL containing embedded username:password",
+      "risk": "Credentials visible in source code, logs, and browser history.",
+      "fix": "Separate credentials from URLs. Pass via headers or environment variables."
+    },
+    {
+      "id": "generic-bearer-token-inline",
+      "name": "Inline Bearer Token",
+      "severity": "critical",
+      "regex": "(?i)['\"]Bearer\\s+[a-zA-Z0-9_.-]{20,}['\"]",
+      "description": "Hardcoded Bearer token in an authorization header",
+      "risk": "Direct API access with the embedded credentials.",
+      "fix": "Obtain tokens at runtime. Never hardcode auth headers."
+    },
+    {
+      "id": "generic-encryption-key",
+      "name": "Hardcoded Encryption Key",
+      "severity": "critical",
+      "regex": "(?i)(?:encryption_key|ENCRYPTION_KEY|aes_key|AES_KEY|cipher_key)\\s*[=:]\\s*['\"][^'\"]{16,}['\"]",
+      "description": "Encryption key hardcoded in source code",
+      "risk": "All encrypted data can be decrypted. Defeats the purpose of encryption entirely.",
+      "fix": "Use a key management service (AWS KMS, GCP KMS, Azure Key Vault, HashiCorp Vault)."
+    },
+    {
+      "id": "ip-address-private",
+      "name": "Private/Internal IP Address",
+      "severity": "info",
+      "regex": "(?:10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}|172\\.(?:1[6-9]|2[0-9]|3[0-1])\\.[0-9]{1,3}\\.[0-9]{1,3}|192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3})",
+      "description": "Private/internal IP address that may reveal network topology",
+      "risk": "Reveals internal network structure. Useful for attackers doing reconnaissance.",
+      "fix": "Use DNS names or configuration variables instead of hardcoded IPs.",
+      "false_positive_hints": ["Common in Docker, localhost development, and test configs"]
+    }
+  ]
+}

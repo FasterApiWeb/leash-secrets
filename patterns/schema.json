@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Leash Pattern File",
+  "description": "Schema for leash secret detection pattern files. Use this when contributing new patterns.",
+  "type": "object",
+  "required": ["provider", "display_name", "patterns"],
+  "properties": {
+    "provider": {
+      "type": "string",
+      "description": "Short identifier for the provider (e.g., 'aws', 'stripe')"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-readable name for the provider group"
+    },
+    "patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "severity", "regex", "description", "risk", "fix"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this pattern (kebab-case)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name for the secret type"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "warning", "info"],
+            "description": "Severity level: critical (block), warning (flag), info (note)"
+          },
+          "regex": {
+            "type": "string",
+            "description": "Regular expression pattern to detect the secret"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this secret is and where it comes from"
+          },
+          "risk": {
+            "type": "string",
+            "description": "What an attacker can do with this secret"
+          },
+          "fix": {
+            "type": "string",
+            "description": "How to remediate — env var name, secret manager, etc."
+          },
+          "rotation_url": {
+            "type": "string",
+            "description": "URL where the user can rotate/revoke this secret"
+          },
+          "false_positive_hints": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Hints for avoiding false positives"
+          }
+        }
+      }
+    }
+  }
+}

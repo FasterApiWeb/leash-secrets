@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: leash
+message: >-
+  If you use leash in your research or tooling,
+  please cite it using this metadata.
+type: software
+authors:
+  - name: FasterApiWeb
+    alias: eeshu
+repository-code: https://github.com/FasterApiWeb/leash
+url: https://fasterapiweb.github.io/leash
+license: MIT
+version: 1.0.0
+date-released: "2026-07-07"
+keywords:
+  - secret-detection
+  - security
+  - ai-agent
+  - devsecops
+abstract: >-
+  AI agent skill that catches exposed API keys, tokens,
+  and credentials before they hit your codebase.
+  71 patterns across 11 provider categories.
+  Works with Cursor, Claude Code, Codex, Copilot,
+  Gemini, and 20+ other AI coding agents.
