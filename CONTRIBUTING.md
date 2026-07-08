@@ -86,12 +86,22 @@ npm run package-extension
 
 ## Maintainer Release Setup
 
-Releases are automated via [release-please](https://github.com/googleapis/release-please) when changes merge to `main`. Configure these GitHub Actions secrets once:
+Releases use [release-please](https://github.com/googleapis/release-please). **Note:** the `FasterApiWeb` org blocks GitHub Actions from opening PRs, so release PRs must be created and merged manually.
+
+### One-time secrets
 
 | Secret | Purpose | How to create |
 |--------|---------|---------------|
 | `NPM_TOKEN` | Publish `leash-secrets` to npm | [npmjs.com](https://www.npmjs.com) → Access Tokens → Granular token with **Read and Write** + **Bypass 2FA for publish** |
-| `VSCE_PAT` | Publish `leash-secrets-vscode` to VS Marketplace | [Azure DevOps](https://dev.azure.com) → Personal Access Token with **Marketplace → Manage** scope |
+| `VSCE_PAT` | Publish `leash-secrets-vscode` to VS Marketplace *(deferred)* | [Azure DevOps](https://dev.azure.com) → Personal Access Token with **Marketplace → Manage** scope |
+
+### Release checklist
+
+1. Push changes to `main` — CI must be green
+2. If release-please branch exists (`release-please--branches--main--components--leash-secrets`), open a PR to `main` and **squash merge** it
+3. If no release PR exists, create one manually from the release-please branch
+4. Create GitHub Release tag `leash-secrets-vX.Y.Z` with tarball/zip assets (or merge the release PR and tag)
+5. Publish npm: **Actions → Publish npm → Run workflow** (uses `NPM_TOKEN`)
 
 Local publishing (if needed):
 
