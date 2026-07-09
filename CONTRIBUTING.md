@@ -106,10 +106,15 @@ Repository/org Actions settings must allow GitHub-owned actions used by workflow
 ### Release checklist
 
 1. Push changes to `main` — CI must be green
-2. If release-please branch exists (`release-please--branches--main--components--leash-secrets`), open a PR to `main` and **squash merge** it
-3. If no release PR exists, create one manually from the release-please branch
-4. Create GitHub Release tag `leash-secrets-vX.Y.Z` with tarball/zip assets (or merge the release PR and tag)
-5. Publish npm: **Actions → Publish npm → Run workflow** (uses `NPM_TOKEN`)
+2. Prepare the release branch locally (Actions cannot open PRs in this org):
+   ```bash
+   bash scripts/prepare-release.sh
+   ```
+3. Open a PR from `release-please--branches--main--components--leash-secrets` → `main`
+4. **Merge with a merge commit** (not squash) so release-please can tag the release
+5. If auto-tag/npm does not run, finish manually:
+   - GitHub Release tag `leash-secrets-vX.Y.Z` with tarball/zip assets
+   - **Actions → Publish npm → Run workflow**
 
 Local publishing (if needed):
 
