@@ -114,6 +114,10 @@ nav:
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
       - How It Works: getting-started/how-it-works.md
+      - Stack Guides:
+          - Django: getting-started/stacks/django.md
+          - Next.js: getting-started/stacks/nextjs.md
+          - Rails: getting-started/stacks/rails.md
   - Guide:
       - Commands: guide/commands.md
       - Modes: guide/modes.md

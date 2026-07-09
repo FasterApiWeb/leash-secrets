@@ -147,3 +147,12 @@ You should see the current mode (default: `patrol`). Try `/leash-secrets-help` f
 | Gemini | `gemini extensions uninstall leash-secrets` |
 | Windsurf / Cline / Kiro | Delete the copied rule file |
 | Git hook | Delete `.git/hooks/pre-commit-leash-secrets` |
+
+---
+
+## Stack-specific guides
+
+- [Django](stacks/django.md)
+- [Next.js](stacks/nextjs.md)
+- [Rails](stacks/rails.md)
+
