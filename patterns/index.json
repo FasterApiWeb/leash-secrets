@@ -15,6 +15,7 @@
     "ci-cd.json",
     "crypto.json",
     "datadog.json",
+    "cloudflare.json",
     "generic.json"
   ],
   "severity_levels": {
