@@ -1,12 +1,9 @@
 # Manual semver release (same pattern as FasterApiWeb/fork-shepherd).
 # Actions → Release Draft → Run workflow → pick branch + patch|minor|major
-# → creates a *draft* GitHub Release. Publish the draft in the UI to ship.
-# Publishing the draft triggers Publish npm (see publish-npm.yml).
+# → bumps version files if needed, pushes commit, creates a *draft* GitHub Release.
+# Publish the draft in the UI to ship (triggers Publish npm).
 #
-# Tag format: leash-secrets-vX.Y.Z (matches existing releases).
-# Does NOT bump package.json — merge a version bump to main first
-# (scripts/prepare-release.sh), then run this with the matching bump,
-# or use dry_run to preview the next tag.
+# Tag format: leash-secrets-vX.Y.Z
 
 name: Release Draft
 
@@ -14,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: "Git branch (or SHA) to tag and release from"
+        description: "Git branch to release from"
         required: true
         type: string
         default: main
@@ -28,7 +25,7 @@ on:
           - major
         default: patch
       dry_run:
-        description: "Compute next version only (do not tag or release)"
+        description: "Compute next version only (do not commit, tag, or release)"
         required: false
         type: boolean
         default: false
@@ -71,14 +68,17 @@ jobs:
             echo "Using GitHub App installation token"
             echo "::add-mask::${APP_TOKEN}"
             echo "token=${APP_TOKEN}" >> "${GITHUB_OUTPUT}"
+            echo "source=app" >> "${GITHUB_OUTPUT}"
           elif [[ -n "${PAT_TOKEN}" ]]; then
             echo "Using RELEASE_TOKEN PAT"
             echo "::add-mask::${PAT_TOKEN}"
             echo "token=${PAT_TOKEN}" >> "${GITHUB_OUTPUT}"
+            echo "source=pat" >> "${GITHUB_OUTPUT}"
           else
             echo "Using GITHUB_TOKEN"
             echo "::add-mask::${FALLBACK_TOKEN}"
             echo "token=${FALLBACK_TOKEN}" >> "${GITHUB_OUTPUT}"
+            echo "source=github" >> "${GITHUB_OUTPUT}"
           fi
 
       - uses: actions/checkout@v4
@@ -95,6 +95,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          git fetch origin --tags --force
           if git rev-parse --verify "origin/${SOURCE_LABEL}" >/dev/null 2>&1; then
             git checkout -B "${SOURCE_LABEL}" "origin/${SOURCE_LABEL}"
           elif git rev-parse --verify "${SOURCE_LABEL}" >/dev/null 2>&1; then
@@ -104,7 +105,6 @@ jobs:
             exit 1
           fi
 
-          sha="$(git rev-parse HEAD)"
           pkg="$(node -p "require('./package.json').version")"
           latest="$(git tag -l 'leash-secrets-v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1 || true)"
           if [[ -z "${latest}" ]]; then
@@ -124,30 +124,101 @@ jobs:
             *) echo "::error::Unknown bump: ${BUMP}"; exit 1 ;;
           esac
 
-          tag="leash-secrets-v${major}.${minor}.${patch}"
-          expected="${major}.${minor}.${patch}"
+          next="${major}.${minor}.${patch}"
+          tag="leash-secrets-v${next}"
 
           if git rev-parse "${tag}" >/dev/null 2>&1; then
             echo "::error::Tag ${tag} already exists"
             exit 1
           fi
 
-          if [[ "${pkg}" != "${expected}" ]]; then
-            echo "::error::package.json is ${pkg} but ${BUMP} bump expects ${expected}."
-            echo "::error::Merge a version bump to main first (bash scripts/prepare-release.sh), then re-run."
-            exit 1
+          if [[ "${pkg}" == "${next}" ]]; then
+            need_bump=false
+          else
+            need_bump=true
           fi
 
           {
             echo "tag=${tag}"
-            echo "version=${expected}"
+            echo "version=${next}"
             echo "latest=${latest}"
             echo "bump=${BUMP}"
-            echo "sha=${sha}"
             echo "branch=${SOURCE_LABEL}"
+            echo "pkg_before=${pkg}"
+            echo "need_bump=${need_bump}"
           } >> "${GITHUB_OUTPUT}"
 
-          echo "Bumping ${latest} --${BUMP}--> ${tag} from ${SOURCE_LABEL} @ ${sha:0:7} (package.json ${pkg})"
+          echo "Next ${tag} (from ${latest}, bump=${BUMP}); package.json is ${pkg}; need_bump=${need_bump}"
+
+      - name: Bump version files
+        id: bump
+        if: steps.version.outputs.need_bump == 'true' && inputs.dry_run != true
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BRANCH: ${{ steps.version.outputs.branch }}
+          AUTH_SOURCE: ${{ steps.auth.outputs.source }}
+        run: |
+          set -euo pipefail
+          TODAY="$(date -u +%Y-%m-%d)"
+
+          node <<'NODE'
+          const fs = require('fs');
+          const version = process.env.VERSION;
+          for (const file of ['package.json', 'vscode-extension/package.json']) {
+            const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+            pkg.version = version;
+            fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');
+          }
+          fs.writeFileSync('.release-please-manifest.json', JSON.stringify({ '.': version }, null, 2) + '\n');
+          NODE
+
+          # install.sh VERSION=
+          sed -i "s/^VERSION=\"[^\"]*\"/VERSION=\"${VERSION}\"/" scripts/install.sh
+
+          # CITATION.cff
+          sed -i "s/^version: .*/version: ${VERSION}/" CITATION.cff
+          sed -i "s/^date-released: .*/date-released: \"${TODAY}\"/" CITATION.cff
+
+          # CHANGELOG — insert section after title block if missing
+          PREV="${{ steps.version.outputs.latest }}"
+          if ! grep -q "## \[${VERSION}\]" CHANGELOG.md 2>/dev/null; then
+            tmp="$(mktemp)"
+            {
+              head -n 7 CHANGELOG.md
+              echo ""
+              echo "## [${VERSION}](https://github.com/${GITHUB_REPOSITORY}/compare/${PREV}...leash-secrets-v${VERSION}) (${TODAY})"
+              echo ""
+              echo "### Maintenance"
+              echo ""
+              echo "* release ${VERSION}"
+              echo ""
+              tail -n +8 CHANGELOG.md
+            } > "${tmp}"
+            mv "${tmp}" CHANGELOG.md
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json vscode-extension/package.json .release-please-manifest.json \
+            scripts/install.sh CITATION.cff CHANGELOG.md
+          git commit -m "chore: release ${VERSION}"
+
+          if ! git push origin "HEAD:${BRANCH}"; then
+            echo "::error::Failed to push release commit to ${BRANCH}."
+            echo "::error::Branch protection likely blocks GITHUB_TOKEN. Add secret RELEASE_TOKEN"
+            echo "::error::(admin PAT that can push to main / bypass rulesets), or allow the"
+            echo "::error::GitHub Actions app to bypass the main ruleset, then re-run."
+            echo "::error::Auth source was: ${AUTH_SOURCE}"
+            exit 1
+          fi
+
+          echo "sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+          echo "Pushed chore: release ${VERSION} to ${BRANCH} @ $(git rev-parse --short HEAD)"
+
+      - name: Use existing HEAD when no bump needed
+        id: nobump
+        if: steps.version.outputs.need_bump != 'true' || inputs.dry_run == true
+        run: echo "sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
 
       - name: Package release assets
         if: inputs.dry_run != true
@@ -170,7 +241,7 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: leash-secrets v${{ steps.version.outputs.version }}
-          target_commitish: ${{ steps.version.outputs.sha }}
+          target_commitish: ${{ steps.bump.outputs.sha || steps.nobump.outputs.sha }}
           draft: true
           generate_release_notes: true
           files: |
@@ -181,7 +252,7 @@ jobs:
       - name: Summary
         run: |
           if [[ "${{ inputs.dry_run }}" == "true" ]]; then
-            echo "::notice::Dry run — would draft ${{ steps.version.outputs.tag }} from ${{ steps.version.outputs.branch }} @ ${{ steps.version.outputs.sha }}"
+            echo "::notice::Dry run — would draft ${{ steps.version.outputs.tag }} (package.json ${{ steps.version.outputs.pkg_before }} → ${{ steps.version.outputs.version }}, need_bump=${{ steps.version.outputs.need_bump }})"
           else
-            echo "::notice::Draft ${{ steps.version.outputs.tag }} created. Open Releases → edit draft → Publish release to ship (triggers npm publish)."
+            echo "::notice::Draft ${{ steps.version.outputs.tag }} created. Open Releases → Publish to ship (triggers npm)."
           fi

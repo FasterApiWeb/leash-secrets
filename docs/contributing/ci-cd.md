@@ -17,24 +17,23 @@ Push lands on main
     → Release (release-please)  ← legacy; usually ignore
 
 When you want to ship a version
-    → bump version on main (prepare-release.sh)
     → Actions → Release Draft (patch/minor/major)
+    → workflow bumps version files + pushes commit (if needed)
     → draft GitHub Release appears
     → you Publish the draft in the UI
-    → Publish npm runs automatically
+    → Publish npm runs (skips if that version is already on npm)
 ```
 
 | Stage | Tool | Output |
 |-------|------|--------|
 | Validate code | **CI** | Pass/fail on PR |
 | Update docs site | **Deploy Docs** | GitHub Pages |
-| Cut a version | **Release Draft** | Draft GitHub Release + assets |
+| Cut a version | **Release Draft** | Version bump commit (if needed) + draft GitHub Release + assets |
 | Make it live | You click **Publish** | Public GitHub Release |
-| Package registry | **Publish npm** | `leash-secrets` on npm |
+| Package registry | **Publish npm** | `leash-secrets` on npm (no-op if already published) |
 
 ```
-prepare-release.sh  →  merge  →  Release Draft  →  Publish draft  →  npm
-     (version)         (main)      (tag+assets)      (you)           (auto)
+Release Draft (auto-bump)  →  draft tag/assets  →  Publish draft  →  npm
 ```
 
 ## Workflow table
@@ -45,8 +44,8 @@ prepare-release.sh  →  merge  →  Release Draft  →  Publish draft  →  npm
 | **Validate Patterns** | PRs/pushes that touch `patterns/` | Pattern JSON / fixture validation |
 | **Deploy Docs** | Push to `main` | MkDocs → GitHub Pages |
 | **Release** (release-please) | Push to `main` | **Legacy.** Tries to manage release PRs/tags. Org often blocks Actions from opening PRs — prefer **Release Draft** |
-| **Release Draft** | **Manual** (`workflow_dispatch`) | You pick patch/minor/major → **draft** `leash-secrets-vX.Y.Z` + `.tar.gz` / `.zip` |
-| **Publish npm** | Manual, **or** when a draft release is **published** | `npm publish --provenance --access public` |
+| **Release Draft** | **Manual** (`workflow_dispatch`) | You pick patch/minor/major → bumps `package.json` / `install.sh` / etc. if needed → **draft** `leash-secrets-vX.Y.Z` + assets |
+| **Publish npm** | Manual, **or** when a draft release is **published** | `npm publish --provenance` (succeeds as no-op if version already on npm) |
 
 Workflow files live under [`.github/workflows/`](https://github.com/FasterApiWeb/leash-secrets/tree/main/.github/workflows).
 
@@ -80,37 +79,34 @@ No npm publish happens on normal merges.
 
 ## How to ship a version
 
-### 1. Put the next version on `main`
-
-```bash
-bash scripts/prepare-release.sh
-```
-
-Open/merge the release PR so `package.json`, `install.sh`, changelog, etc. match the next version.
-
-Release Draft **requires** `package.json` to already equal the version it will tag. It does not invent a bump commit (org blocks Actions from opening PRs).
-
-### 2. Create a draft release
+### 1. Create a draft release
 
 1. **Actions → Release Draft → Run workflow**
 2. Branch: `main`
-3. Bump: `patch` / `minor` / `major` (must match `package.json`)
+3. Bump: `patch` / `minor` / `major`
 4. Optional: `dry_run` = true to preview the next tag
 
-Result: draft release `leash-secrets-vX.Y.Z` + assets. Not public. npm not published yet.
+The workflow:
 
-### 3. Publish the draft
+- Computes the next version from the latest `leash-secrets-v*` tag
+- If `package.json` is behind, **bumps** `package.json`, `install.sh`, `CITATION.cff`, `vscode-extension/package.json`, manifest, and `CHANGELOG.md`, then **pushes** `chore: release X.Y.Z` to `main`
+- Creates a **draft** release `leash-secrets-vX.Y.Z` + assets
+
+If the push fails (branch protection), add `RELEASE_TOKEN` (admin PAT that can push to `main` / bypass rulesets) or allow the GitHub Actions app to bypass the main ruleset, then re-run.
+
+### 2. Publish the draft
 
 1. **Releases** → open the draft  
 2. Review notes/assets  
 3. **Publish release**
 
-Result: **Publish npm** runs and publishes `leash-secrets@X.Y.Z`.
+Result: **Publish npm** runs and publishes `leash-secrets@X.Y.Z` (or no-ops if that version is already on npm).
 
-### 4. If npm did not run
+### 3. If you only need npm
 
-**Actions → Publish npm → Run workflow** (needs `NPM_TOKEN`).
+**Actions → Publish npm → Run workflow** — publishes whatever version is on the checked-out ref; skips cleanly if already published.
 
+Optional local prep (still supported): `bash scripts/prepare-release.sh` if you prefer a version-bump PR before Release Draft.
 ## Branch protection (maintainer note)
 
 `main` requires PRs and the CI status checks. Required **approving** reviews are set to **0** so the sole maintainer can merge their own PRs (GitHub never counts self-approvals). CI must still be green. Revisit if more maintainers join.

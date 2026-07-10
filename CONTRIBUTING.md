@@ -89,26 +89,25 @@ npm run package-extension
 **Full reference (workflow table, secrets, mental model, ship steps):**  
 [docs/contributing/ci-cd.md](docs/contributing/ci-cd.md) · published site: [CI/CD & Releases](https://fasterapiweb.github.io/leash-secrets/contributing/ci-cd/)
 
-Quick path: **version bump on `main` → Actions → Release Draft → Publish draft → npm**. Prefer Release Draft over legacy release-please.
+Quick path: **Actions → Release Draft (auto-bumps) → Publish draft → npm**. Prefer Release Draft over legacy release-please.
 
 ### One-time secrets
 
 | Secret | Purpose |
 |--------|---------|
 | `NPM_TOKEN` | Publish to npm (**required** to ship) |
-| `RELEASE_TOKEN` or `RELEASE_APP_*` | Optional for Release Draft (else `GITHUB_TOKEN`) |
+| `RELEASE_TOKEN` or `RELEASE_APP_*` | Recommended for Release Draft push to protected `main` (else `GITHUB_TOKEN` may be blocked) |
 | `VSCE_PAT` | VS Code marketplace *(deferred)* |
 
-Details and creation steps: [ci-cd.md — Secrets](docs/contributing/ci-cd.md#secrets-needed).
+Details: [ci-cd.md — Secrets](docs/contributing/ci-cd.md#secrets-needed).
 
 ### Release checklist (short)
 
-1. `bash scripts/prepare-release.sh` → merge so `package.json` matches next version  
-2. **Actions → Release Draft → Run** (`patch` / `minor` / `major`)  
-3. **Releases → Publish** the draft → **Publish npm** runs automatically  
+1. **Actions → Release Draft → Run** (`patch` / `minor` / `major`) — bumps version on `main` if needed, creates draft  
+2. **Releases → Publish** the draft → **Publish npm** runs (skips if version already on npm)  
 
-If npm did not run: **Actions → Publish npm → Run workflow**.
-
+If the draft push fails: add `RELEASE_TOKEN` (admin PAT / bypass) and re-run.  
+If you only need npm: **Actions → Publish npm → Run workflow**.
 ## PR Guidelines
 
 - **One pattern per PR** if adding patterns (makes review fast)
