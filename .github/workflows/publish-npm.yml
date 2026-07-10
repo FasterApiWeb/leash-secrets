@@ -32,7 +32,22 @@ jobs:
       - name: Validate before publish
         run: npm test
 
+      - name: Skip if version already on npm
+        id: gate
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          if npm view "leash-secrets@${VERSION}" version >/dev/null 2>&1; then
+            echo "skip=true" >> "${GITHUB_OUTPUT}"
+            echo "::notice::leash-secrets@${VERSION} is already on npm — nothing to publish."
+          else
+            echo "skip=false" >> "${GITHUB_OUTPUT}"
+            echo "Will publish leash-secrets@${VERSION}"
+          fi
+
       - name: Publish to npm
+        if: steps.gate.outputs.skip != 'true'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
